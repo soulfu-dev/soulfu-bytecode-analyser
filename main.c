@@ -497,7 +497,7 @@ int main(int argc, char *argv[])
                      * 4 byte file start address
                      * zero-terminated function name
                     */
-                    printf(" %08x %08x %08x %08x %s", read_int_be(runptr), read_int_be(runptr + 4), read_int_be(runptr + 8), read_int_be(runptr + 12), runptr + 16);
+                    printf(" %08x %08x %08x %08x \"%s\"", read_int_be(runptr), read_int_be(runptr + 4), read_int_be(runptr + 8), read_int_be(runptr + 12), runptr + 16);
                     runptr += 16;
                     go_past_null(&runptr);
                     break;
@@ -538,15 +538,15 @@ int main(int argc, char *argv[])
                             printf(" 1.0f");
                             break;
                         case 3:
-                            printf(" BYTE %u", runptr[1]);
+                            printf(" BYTE %02x", runptr[1]);
                             ++runptr;
                             break;
                         case 4:
-                            printf(" SHORT %u", read_short_be(runptr + 1));
+                            printf(" SHORT %04x", read_short_be(runptr + 1));
                             runptr += 2;
                             break;
                         case 5:
-                            printf(" INT %u", read_int_be(runptr + 1));
+                            printf(" INT %08x", read_int_be(runptr + 1));
                             runptr += 4;
                             break;
                         case 6:
@@ -557,8 +557,13 @@ int main(int argc, char *argv[])
                         case 7:
                             printf(" STRING (?)");
                             break;
+                        case 8:
+                            printf(" FILE PTR %08x", read_int_be(runptr + 1));
+                            runptr += 4;
+                            break;
                         case 9:
-                            printf(" FILE DATA REF (?)");
+                            printf(" FILE DATA REF %08x", read_int_be(runptr + 1));
+                            runptr += 4;
                             break;
                         default:
                             printf(" INVALID");
