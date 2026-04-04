@@ -7,6 +7,11 @@
 #define MAX_FAST_FUNCTION            16
 #define MAX_VARIABLE                 32   // I00 - I31, F00 - F31...
 
+struct LabelDesc {
+    unsigned short address;
+    const char *label;
+};
+
 unsigned char run_buffer[RUN_BUFFER_SIZE];
 unsigned int run_buffer_used;
 
@@ -409,6 +414,9 @@ int main(int argc, char *argv[])
     int string_count = read_short_be(runptr);
     runptr += 2;
 
+    struct LabelDesc *label_descs =
+      (struct LabelDesc *)malloc(function_count * sizeof(struct LabelDesc));
+
     // list functions
     if (function_count > 0)
     {
@@ -419,9 +427,12 @@ int main(int argc, char *argv[])
 
             unsigned short address = read_short_be(runptr);
             runptr += 2;
+            label_descs[i].address = address;
 
             const char *function_name = runptr;
             go_past_null(&runptr);
+            label_descs[i].label = function_name;
+
             const char *args = runptr;
             go_past_null(&runptr);
 
@@ -467,9 +478,19 @@ int main(int argc, char *argv[])
     }
 
     // interpret byte code
-    printf("Byte code:\n");
     while (runptr < (run_buffer + run_buffer_used))
     {
+        unsigned short listing_offset = runptr - run_buffer;
+        // check whether the offset is in function offset list
+        for (int i = 0; i < function_count; ++i)
+        {
+            if (listing_offset == label_descs[i].address)
+            {
+                printf("\n%s:\n", label_descs[i].label);
+            }
+        }
+        printf("%04x:", runptr - run_buffer);
+
         if (*runptr < 128)
         {
             printf("  %s", opcode_names[*runptr]);
@@ -577,6 +598,7 @@ int main(int argc, char *argv[])
         }
     }
 
+    free(label_descs);
     return EXIT_SUCCESS;
 }
 
