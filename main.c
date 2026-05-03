@@ -553,7 +553,6 @@ int main(int argc, char *argv[])
                 case 128: // integer
                 case 160: // property
                 case 192: // float
-                    bptr   += sprintf(bptr, "%02x", *runptr);
                     opsptr += sprintf(opsptr, "PUSH");
                     runptr += print_arg_data(&opsptr, &bptr, runptr);
                     break;
